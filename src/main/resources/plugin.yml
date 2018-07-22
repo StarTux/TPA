@@ -1,0 +1,24 @@
+name: TPA
+description: Teleport request
+author: StarTux
+version: 0.1
+api-version: 1.13
+website: https://cavetale.com
+main: com.winthier.tpa.TPAPlugin
+depend: []
+commands:
+  tpa:
+    description: Request teleport to another player.
+    usage: /<command> <player>
+    permission: tpa.tpa
+  bring:
+    description: Accept a teleport request
+    usage: /<command> <player>
+    permission: tpa.tpa
+permissions:
+  tpa.tpa:
+    description: Use the /tpa command
+    default: true
+  tpa.admin:
+    description: Use admin commands
+    default: op
