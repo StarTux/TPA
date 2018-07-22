@@ -18,7 +18,7 @@ commands:
 permissions:
   tpa.tpa:
     description: Use the /tpa command
-    default: true
+    default: op
   tpa.admin:
     description: Use admin commands
     default: op
