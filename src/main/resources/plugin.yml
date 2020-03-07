@@ -1,11 +1,12 @@
+main: com.winthier.tpa.TPAPlugin
 name: TPA
 description: Teleport request
 author: StarTux
 version: 0.1
 api-version: 1.13
-website: https://cavetale.com
-main: com.winthier.tpa.TPAPlugin
+website: https://github.com/StarTux/TPA
 depend: []
+softdepend: []
 commands:
   tpa:
     description: Request teleport to another player.
