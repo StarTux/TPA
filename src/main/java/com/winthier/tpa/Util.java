@@ -41,20 +41,17 @@ final class Util {
         if (seconds == 1) return "one second";
         int minutes = seconds / 60;
         if (minutes == 0) {
-            return new StringBuilder().append("")
-                .append(seconds).append(" seconds").toString();
+            return "" + seconds + " seconds";
         }
         if (minutes == 1) {
             return "one minute";
         }
         int hours = minutes / 60;
         if (hours == 0) {
-            return new StringBuilder().append("")
-                .append(minutes).append(" minutes").toString();
+            return "" + minutes + " minutes";
         }
         if (hours == 1) return "one hour";
-        return new StringBuilder().append("")
-            .append(hours).append(" hours").toString();
+        return "" + hours + " hours";
     }
 
     public static void tellRaw(Player player, Object json) {
@@ -65,6 +62,7 @@ final class Util {
             e.printStackTrace();
             return;
         }
-        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), (new StringBuilder()).append("minecraft:tellraw ").append(player.getName()).append(" ").append(js).toString());
+        String cmd = "minecraft:tellraw " + player.getName() + " " + js;
+        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
     }
 }

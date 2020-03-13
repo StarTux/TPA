@@ -15,7 +15,7 @@ final class LongCooldowns {
         return new File(plugin.getDataFolder(), "cooldowns.yml");
     }
 
-    LongCooldowns(TPAPlugin plugin) {
+    LongCooldowns(final TPAPlugin plugin) {
         config = null;
         this.plugin = plugin;
         config = YamlConfiguration.loadConfiguration(saveFile());
@@ -23,7 +23,7 @@ final class LongCooldowns {
         Iterator iterator = config.getKeys(false).iterator();
         do {
             if (!iterator.hasNext()) break;
-            String userKey = (String)iterator.next();
+            String userKey = (String) iterator.next();
             long time = config.getLong(userKey);
             if (time < currentTime) config.set(userKey, null);
         } while (true);
@@ -46,11 +46,11 @@ final class LongCooldowns {
         if (millis == null) return 0;
         long cd = millis.longValue() - System.currentTimeMillis();
         if (cd < 0L) return 0;
-        return (int)(cd / 1000L);
+        return (int) (cd / 1000L);
     }
 
     void setCooldownInSeconds(UUID uuid, int seconds) {
-        long cooldown = System.currentTimeMillis() + (long)seconds * 1000L;
+        long cooldown = System.currentTimeMillis() + (long) seconds * 1000L;
         config.set(uuid.toString(), Long.valueOf(cooldown));
     }
 }

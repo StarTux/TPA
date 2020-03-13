@@ -18,12 +18,12 @@ final class ShortCooldowns {
         if (cd < 0L) {
             return 0;
         } else {
-            return (int)(cd / 1000L);
+            return (int) (cd / 1000L);
         }
     }
 
     void setCooldownInSeconds(UUID uuid, int seconds) {
-        long cooldown = System.currentTimeMillis() + (long)seconds * 1000L;
+        long cooldown = System.currentTimeMillis() + (long) seconds * 1000L;
         cooldowns.put(uuid, Long.valueOf(cooldown));
     }
 }

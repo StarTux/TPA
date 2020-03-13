@@ -20,7 +20,7 @@ final class TPACommand implements CommandExecutor {
             sender.sendMessage("[TPA] Configuration reloaded");
             return true;
         }
-        Player player = (sender instanceof Player) ? (Player)sender : null;
+        Player player = (sender instanceof Player) ? (Player) sender : null;
         if (player == null) {
             sender.sendMessage("Player expected");
             return true;
@@ -35,16 +35,23 @@ final class TPACommand implements CommandExecutor {
         if (target == null) {
             Util.msg(player, "&cPlayer not found: %s.", targetName);
             return true;
-        } else {
-            plugin.storeRequest(player, target);
-            Util.msg(player, "&3&lTPA&r request sent to %s.", target.getName());
-            List<Object> msg = new ArrayList<>();
-            msg.add(Util.format("&3&lTPA&r %s requests a teleport. Click to accept: ", player.getName()));
-            msg.add(Util.button("[&3Bring&r]", (new StringBuilder()).append("&a/bring ").append(player.getName()).append("\n&oTPA\nTeleport this player\nto you.").toString(), (new StringBuilder()).append("/bring ").append(player.getName()).toString()));
-            Util.tellRaw(target, msg);
-            target.playSound(target.getEyeLocation(), plugin.getSound(), 1.0F, 1.0F);
-            plugin.putOnShortCooldown(player);
+        }
+        if (target.equals(player)) {
+            Util.msg(player, "&cYou cannot teleport to yourself.");
             return true;
         }
+        plugin.storeRequest(player, target);
+        Util.msg(player, "&3&lTPA&r request sent to %s.", target.getName());
+        List<Object> msg = new ArrayList<>();
+        msg.add(Util.format("&3&lTPA&r %s requests a teleport. Click to accept: ",
+                            player.getName()));
+        msg.add(Util.button("[&3Bring&r]",
+                            "&a/bring " + player.getName()
+                            + "\n&oTPA\nTeleport this player\nto you.",
+                            "/bring " + player.getName()));
+        Util.tellRaw(target, msg);
+        target.playSound(target.getEyeLocation(), plugin.getSound(), 1.0F, 1.0F);
+        plugin.putOnShortCooldown(player);
+        return true;
     }
 }

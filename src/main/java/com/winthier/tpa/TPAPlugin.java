@@ -64,17 +64,18 @@ public final class TPAPlugin extends JavaPlugin {
 
     int getCooldownInSeconds(Player player) {
         java.util.UUID uuid = player.getUniqueId();
-        return Math.max(getShortCooldowns().getCooldownInSeconds(uuid), getLongCooldowns().getCooldownInSeconds(uuid));
+        return Math.max(getShortCooldowns().getCooldownInSeconds(uuid),
+                        getLongCooldowns().getCooldownInSeconds(uuid));
     }
 
     void storeRequest(Player sender, Player target) {
-        long exp = System.currentTimeMillis() + (long)expiry * 1000L;
+        long exp = System.currentTimeMillis() + (long) expiry * 1000L;
         TPARequest request = new TPARequest(sender.getUniqueId(), target.getUniqueId(), exp);
         tpaRequests.put(sender.getUniqueId(), request);
     }
 
     TPARequest fetchRequest(Player player) {
-        TPARequest result = (TPARequest)tpaRequests.remove(player.getUniqueId());
+        TPARequest result = (TPARequest) tpaRequests.remove(player.getUniqueId());
         if (result == null) return null;
         if (result.getExpiry() < System.currentTimeMillis()) return null;
         return result;

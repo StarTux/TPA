@@ -9,7 +9,7 @@ public final class TPARequest {
     private final UUID target;
     private final long expiry;
 
-    public TPARequest(UUID sender, UUID target, long expiry) {
+    public TPARequest(final UUID sender, final UUID target, final long expiry) {
         this.sender = sender;
         this.target = target;
         this.expiry = expiry;
