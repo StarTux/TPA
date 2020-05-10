@@ -2,3 +2,5 @@ ShortCooldown: 10
 LongCooldown: 60
 Expiry: 120
 Sound: ENTITY_ARROW_HIT_PLAYER
+DisabledWorlds:
+- MobArena

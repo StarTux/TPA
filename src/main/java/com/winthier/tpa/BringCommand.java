@@ -29,16 +29,19 @@ final class BringCommand implements CommandExecutor {
         if (request == null) {
             Util.msg(player, "&c%s did not request a teleport, or it expired.", target.getName());
             return true;
-        } else {
-            if (target.teleport(player, PlayerTeleportEvent.TeleportCause.COMMAND)) {
-                Util.msg(target, "&3&lTPA&r %s accepted your teleport request.", player.getName());
-                Util.msg(player, "&3&lTPA&r Teleporting %s to you.", target.getName());
-                plugin.putOnLongCooldown(target);
-            } else {
-                Util.msg(target, "&3&lTPA&c Teleporting to %s failed.", player.getName());
-                Util.msg(player, "&3&lTPA&c Bringing %s failed.", target.getName());
-            }
+        }
+        if (plugin.disabledWorlds.contains(player.getWorld().getName())) {
+            Util.msg(player, "&cTPA is disabled in this world.");
             return true;
         }
+        if (target.teleport(player, PlayerTeleportEvent.TeleportCause.COMMAND)) {
+            Util.msg(target, "&3&lTPA&r %s accepted your teleport request.", player.getName());
+            Util.msg(player, "&3&lTPA&r Teleporting %s to you.", target.getName());
+            plugin.putOnLongCooldown(target);
+        } else {
+            Util.msg(target, "&3&lTPA&c Teleporting to %s failed.", player.getName());
+            Util.msg(player, "&3&lTPA&c Bringing %s failed.", target.getName());
+        }
+        return true;
     }
 }

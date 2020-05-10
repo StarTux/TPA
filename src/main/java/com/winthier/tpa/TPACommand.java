@@ -40,6 +40,10 @@ final class TPACommand implements CommandExecutor {
             Util.msg(player, "&cYou cannot teleport to yourself.");
             return true;
         }
+        if (plugin.disabledWorlds.contains(target.getWorld().getName())) {
+            Util.msg(player, "&cTPA is disabled in the destination world.");
+            return true;
+        }
         plugin.storeRequest(player, target);
         Util.msg(player, "&3&lTPA&r request sent to %s.", target.getName());
         List<Object> msg = new ArrayList<>();

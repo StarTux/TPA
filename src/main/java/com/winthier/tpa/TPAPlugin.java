@@ -1,7 +1,9 @@
 package com.winthier.tpa;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
 import org.bukkit.Sound;
@@ -17,6 +19,7 @@ public final class TPAPlugin extends JavaPlugin {
     private int shortCooldown;
     private int expiry;
     private Sound sound;
+    Set<String> disabledWorlds = new HashSet<>();
 
     public TPAPlugin() {
         longCooldowns = null;
@@ -60,6 +63,8 @@ public final class TPAPlugin extends JavaPlugin {
         try {
             sound = Sound.valueOf(getConfig().getString("Sound"));
         } catch (IllegalArgumentException illegalargumentexception) { }
+        disabledWorlds.clear();
+        disabledWorlds.addAll(getConfig().getStringList("DisabledWorlds"));
     }
 
     int getCooldownInSeconds(Player player) {
