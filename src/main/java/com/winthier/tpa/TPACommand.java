@@ -1,5 +1,6 @@
 package com.winthier.tpa;
 
+import com.winthier.chat.ChatPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,10 @@ final class TPACommand implements CommandExecutor {
         }
         if (target.equals(player)) {
             Util.msg(player, "&cYou cannot teleport to yourself.");
+            return true;
+        }
+        if (ChatPlugin.getInstance().doesIgnore(target.getUniqueId(), player.getUniqueId())) {
+            Util.msg(player, "&cPlayer not found: %s.", targetName);
             return true;
         }
         if (plugin.disabledWorlds.contains(target.getWorld().getName())) {
