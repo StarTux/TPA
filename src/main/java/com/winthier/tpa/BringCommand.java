@@ -34,6 +34,9 @@ final class BringCommand implements CommandExecutor {
             Util.msg(player, "&cTPA is disabled in this world.");
             return true;
         }
+        if (target.isInsideVehicle()) {
+            target.leaveVehicle();
+        }
         if (target.teleport(player, PlayerTeleportEvent.TeleportCause.COMMAND)) {
             Util.msg(target, "&3&lTPA&r %s accepted your teleport request.", player.getName());
             Util.msg(player, "&3&lTPA&r Teleporting %s to you.", target.getName());
