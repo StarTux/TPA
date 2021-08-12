@@ -1,6 +1,7 @@
 package com.winthier.tpa;
 
 import lombok.RequiredArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -37,14 +38,16 @@ final class BringCommand implements CommandExecutor {
         if (target.isInsideVehicle()) {
             target.leaveVehicle();
         }
-        if (target.teleport(player, PlayerTeleportEvent.TeleportCause.COMMAND)) {
-            Util.msg(target, "&3&lTPA&r %s accepted your teleport request.", player.getName());
-            Util.msg(player, "&3&lTPA&r Teleporting %s to you.", target.getName());
-            plugin.putOnLongCooldown(target);
-        } else {
-            Util.msg(target, "&3&lTPA&c Teleporting to %s failed.", player.getName());
-            Util.msg(player, "&3&lTPA&c Bringing %s failed.", target.getName());
-        }
+        Bukkit.getScheduler().runTask(plugin, () -> {
+                if (target.teleport(player, PlayerTeleportEvent.TeleportCause.COMMAND)) {
+                    Util.msg(target, "&3&lTPA&r %s accepted your teleport request.", player.getName());
+                    Util.msg(player, "&3&lTPA&r Teleporting %s to you.", target.getName());
+                    plugin.putOnLongCooldown(target);
+                } else {
+                    Util.msg(target, "&3&lTPA&c Teleporting to %s failed.", player.getName());
+                    Util.msg(player, "&3&lTPA&c Bringing %s failed.", target.getName());
+                }
+            });
         return true;
     }
 }
