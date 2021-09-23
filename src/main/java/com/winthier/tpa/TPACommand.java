@@ -1,5 +1,7 @@
 package com.winthier.tpa;
 
+import com.cavetale.core.event.player.PluginPlayerEvent.Detail;
+import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.winthier.chat.ChatPlugin;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +63,9 @@ final class TPACommand implements CommandExecutor {
         Util.tellRaw(target, msg);
         target.playSound(target.getEyeLocation(), plugin.getSound(), 1.0F, 1.0F);
         plugin.putOnShortCooldown(player);
+        PluginPlayerEvent.Name.REQUEST_TPA.ultimate(plugin, player)
+            .detail(Detail.TARGET, target.getUniqueId())
+            .call();
         return true;
     }
 }

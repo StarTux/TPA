@@ -1,5 +1,7 @@
 package com.winthier.tpa;
 
+import com.cavetale.core.event.player.PluginPlayerEvent.Detail;
+import com.cavetale.core.event.player.PluginPlayerEvent;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -47,6 +49,13 @@ final class BringCommand implements CommandExecutor {
                     Util.msg(target, "&3&lTPA&c Teleporting to %s failed.", player.getName());
                     Util.msg(player, "&3&lTPA&c Bringing %s failed.", target.getName());
                 }
+                PluginPlayerEvent.Name.ACCEPT_TPA.ultimate(plugin, player)
+                    .detail(Detail.TARGET, target.getUniqueId())
+                    .call();
+                PluginPlayerEvent.Name.PORT_TPA.ultimate(plugin, target)
+                    .detail(Detail.TARGET, player.getUniqueId())
+                    .detail(Detail.LOCATION, player.getLocation())
+                    .call();
             });
         return true;
     }
