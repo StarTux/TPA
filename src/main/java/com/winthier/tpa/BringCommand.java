@@ -1,62 +1,60 @@
 package com.winthier.tpa;
 
-import com.cavetale.core.event.player.PluginPlayerEvent.Detail;
-import com.cavetale.core.event.player.PluginPlayerEvent;
-import lombok.RequiredArgsConstructor;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import com.cavetale.core.command.AbstractCommand;
+import com.cavetale.core.command.CommandArgCompleter;
+import com.cavetale.core.command.CommandWarn;
+import com.cavetale.core.event.player.PlayerTPAEvent;
+import com.winthier.connect.Connect;
+import com.winthier.connect.ConnectRemotePlayer;
+import com.winthier.playercache.PlayerCache;
+import java.util.UUID;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-@RequiredArgsConstructor
-final class BringCommand implements CommandExecutor {
-    final TPAPlugin plugin;
+final class BringCommand extends AbstractCommand<TPAPlugin> {
+    protected BringCommand(final TPAPlugin plugin) {
+        super(plugin, "bring");
+    }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    protected void onEnable() {
+        rootNode.arguments("<player>")
+            .description("Accept teleport request")
+            .completers(CommandArgCompleter.NULL)
+            .playerCaller(this::bring);
+    }
+
+    private boolean bring(Player player, String[] args) {
         if (args.length != 1) return false;
-        Player player = (sender instanceof Player) ? (Player) sender : null;
-        if (player == null) {
-            sender.sendMessage("Player expected");
-            return true;
+        PlayerCache target = PlayerCache.require(args[0]);
+        UUID request = plugin.fetchRequest(target.uuid);
+        if (request == null || !request.equals(player.getUniqueId())) {
+            throw new CommandWarn(target.name + " did not request a teleport or it expired");
         }
-        String playerName = args[0];
-        Player target = plugin.getServer().getPlayer(playerName);
-        if (target == null) {
-            Util.msg(player, "&cPlayer not found: %s.", playerName);
-            return true;
+        plugin.deleteRequest(target.uuid);
+        String targetServer = Connect.getInstance().findServerOfPlayer(target.uuid);
+        if (targetServer == null) {
+            throw new CommandWarn("Player not found: " + target.name);
         }
-        TPARequest request = plugin.fetchRequest(target);
-        if (request == null) {
-            Util.msg(player, "&c%s did not request a teleport, or it expired.", target.getName());
-            return true;
+        if (!new PlayerTPAEvent(target.uuid, player, true).callEvent()) {
+            throw new CommandWarn("You cannot accept this TPA right now");
         }
-        if (plugin.disabledWorlds.contains(player.getWorld().getName())) {
-            Util.msg(player, "&cTPA is disabled in this world.");
-            return true;
-        }
-        if (target.isInsideVehicle()) {
-            target.leaveVehicle();
-        }
-        Bukkit.getScheduler().runTask(plugin, () -> {
-                if (target.teleport(player, PlayerTeleportEvent.TeleportCause.COMMAND)) {
-                    Util.msg(target, "&3&lTPA&r %s accepted your teleport request.", player.getName());
-                    Util.msg(player, "&3&lTPA&r Teleporting %s to you.", target.getName());
-                    plugin.putOnLongCooldown(target);
-                } else {
-                    Util.msg(target, "&3&lTPA&c Teleporting to %s failed.", player.getName());
-                    Util.msg(player, "&3&lTPA&c Bringing %s failed.", target.getName());
+        new ConnectRemotePlayer(target.uuid, target.name, targetServer).bring(plugin, player.getLocation(), targetPlayer -> {
+                if (targetPlayer == null) {
+                    player.sendMessage(text("Teleport failed: " + target.name, RED));
+                    return;
                 }
-                PluginPlayerEvent.Name.ACCEPT_TPA.ultimate(plugin, player)
-                    .detail(Detail.TARGET, target.getUniqueId())
-                    .call();
-                PluginPlayerEvent.Name.PORT_TPA.ultimate(plugin, target)
-                    .detail(Detail.TARGET, player.getUniqueId())
-                    .detail(Detail.LOCATION, player.getLocation())
-                    .call();
-            });
+                targetPlayer.sendMessage(join(noSeparators(),
+                                              text("TPA ", DARK_AQUA),
+                                              text(player.getName() + " accepted your teleport request", WHITE)));
+                player.sendMessage(join(noSeparators(),
+                                        text("TPA ", DARK_AQUA),
+                                        text("Teleported " + target.name + " to you", WHITE)));
+                plugin.putOnCooldown(targetPlayer.getUniqueId(), 60L);
+        });
         return true;
     }
 }

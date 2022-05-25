@@ -1,25 +1,34 @@
 main: com.winthier.tpa.TPAPlugin
 name: TPA
+
+version: 0.1
+api-version: 1.18
+
 description: Teleport request
 author: StarTux
-version: 0.1
-api-version: 1.17
 website: https://github.com/StarTux/TPA
-depend: [Core, Chat]
+
+depend: [Core, PlayerCache, Chat, Connect]
 softdepend: []
+
 commands:
+
   tpa:
     description: Request teleport to another player.
     usage: /<command> <player>
     permission: tpa.tpa
+
   bring:
     description: Accept a teleport request
-    usage: /<command> <player>
     permission: tpa.tpa
+    usage: /<command> <player>
+
 permissions:
+
   tpa.tpa:
     description: Use the /tpa command
     default: op
-  tpa.admin:
-    description: Use admin commands
+
+  tpa.nocooldown:
+    description: Skip cooldowns
     default: op

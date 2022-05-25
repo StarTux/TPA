@@ -1,71 +1,83 @@
 package com.winthier.tpa;
 
-import com.cavetale.core.event.player.PluginPlayerEvent.Detail;
-import com.cavetale.core.event.player.PluginPlayerEvent;
+import com.cavetale.core.command.AbstractCommand;
+import com.cavetale.core.command.CommandArgCompleter;
+import com.cavetale.core.command.CommandWarn;
+import com.cavetale.core.command.RemotePlayer;
+import com.cavetale.core.event.player.PlayerTPAEvent;
+import com.cavetale.core.font.DefaultFont;
 import com.winthier.chat.ChatPlugin;
-import java.util.ArrayList;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import com.winthier.connect.Connect;
+import com.winthier.connect.ConnectPlugin;
+import com.winthier.playercache.PlayerCache;
+import org.bukkit.Bukkit;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.event.ClickEvent.runCommand;
+import static net.kyori.adventure.text.event.HoverEvent.showText;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-@RequiredArgsConstructor
-final class TPACommand implements CommandExecutor {
-    final TPAPlugin plugin;
+final class TPACommand extends AbstractCommand<TPAPlugin> {
+    protected TPACommand(final TPAPlugin plugin) {
+        super(plugin, "tpa");
+    }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    protected void onEnable() {
+        rootNode.arguments("<player>")
+            .description("Request teleport")
+            .completers(CommandArgCompleter.NULL)
+            .remotePlayerCaller(this::tpa);
+    }
+
+    private boolean tpa(RemotePlayer player, String[] args) {
         if (args.length != 1) return false;
-        if (args[0].equalsIgnoreCase("-reload") && sender.hasPermission("tpa.admin")) {
-            plugin.reconfigure();
-            sender.sendMessage("[TPA] Configuration reloaded");
+        if (!player.hasPermission("tpa.nocooldown")) {
+            long cooldown = plugin.getCooldown(player.getUniqueId());
+            if (cooldown > 0) {
+                throw new CommandWarn("Please wait " + cooldown + "s");
+            }
+        }
+        PlayerCache target = PlayerCache.require(args[0]);
+        if (target.uuid.equals(player.getUniqueId())) {
+            throw new CommandWarn("You cannot teleport to yourself");
+        }
+        if (ChatPlugin.getInstance().doesIgnore(target.uuid, player.getUniqueId())) {
+            throw new CommandWarn("Player not found: " + target.name);
+        }
+        Player targetPlayer = Bukkit.getPlayer(target.uuid);
+        if (targetPlayer == null) {
+            if (!player.isPlayer()) {
+                throw new CommandWarn("Player not found: " + target.name);
+            }
+            String targetServer = Connect.getInstance().findServerOfPlayer(target.uuid);
+            if (targetServer == null) {
+                throw new CommandWarn("Player not found: " + target.name);
+            }
+            ConnectPlugin.getInstance().getCoreConnect().dispatchRemoteCommand(player.getPlayer(), "tpa " + target.name, targetServer);
             return true;
         }
-        Player player = (sender instanceof Player) ? (Player) sender : null;
-        if (player == null) {
-            sender.sendMessage("Player expected");
-            return true;
+        if (!new PlayerTPAEvent(player.getUniqueId(), targetPlayer, false).callEvent()) {
+            throw new CommandWarn("You cannot TPA to " + target.name + " right now");
         }
-        int cooldown = plugin.getCooldownInSeconds(player);
-        if (cooldown > 0) {
-            Util.msg(player, "&cYou have to wait %s.", Util.formatSeconds(cooldown));
-            return true;
-        }
-        String targetName = args[0];
-        Player target = plugin.getServer().getPlayer(targetName);
-        if (target == null) {
-            Util.msg(player, "&cPlayer not found: %s.", targetName);
-            return true;
-        }
-        if (target.equals(player)) {
-            Util.msg(player, "&cYou cannot teleport to yourself.");
-            return true;
-        }
-        if (ChatPlugin.getInstance().doesIgnore(target.getUniqueId(), player.getUniqueId())) {
-            Util.msg(player, "&cPlayer not found: %s.", targetName);
-            return true;
-        }
-        if (plugin.disabledWorlds.contains(target.getWorld().getName())) {
-            Util.msg(player, "&cTPA is disabled in the destination world.");
-            return true;
-        }
-        plugin.storeRequest(player, target);
-        Util.msg(player, "&3&lTPA&r request sent to %s.", target.getName());
-        List<Object> msg = new ArrayList<>();
-        msg.add(Util.format("&3&lTPA&r %s requests a teleport. Click to accept: ",
-                            player.getName()));
-        msg.add(Util.button("[&3Bring&r]",
-                            "&a/bring " + player.getName()
-                            + "\n&oTPA\nTeleport this player\nto you.",
-                            "/bring " + player.getName()));
-        Util.tellRaw(target, msg);
-        target.playSound(target.getEyeLocation(), plugin.getSound(), 1.0F, 1.0F);
-        plugin.putOnShortCooldown(player);
-        PluginPlayerEvent.Name.REQUEST_TPA.ultimate(plugin, player)
-            .detail(Detail.TARGET, target.getUniqueId())
-            .call();
+        plugin.storeRequest(player.getUniqueId(), target.uuid);
+        Connect.getInstance().broadcast("tpa.request", player.getUniqueId().toString());
+        plugin.putOnCooldown(player.getUniqueId(), 30L);
+        player.sendMessage(join(noSeparators(),
+                                text("TPA ", DARK_AQUA),
+                                text("Request sent to " + target.name, WHITE)));
+        String cmd = "/bring " + player.getName();
+        targetPlayer.sendMessage(join(noSeparators(),
+                                      text("TPA ", DARK_AQUA),
+                                      text(player.getName() + " requested a teleport. Click to accept: ", WHITE),
+                                      (DefaultFont.ACCEPT_BUTTON.component
+                                       .hoverEvent(showText(text(cmd, GREEN)))
+                                       .clickEvent(runCommand(cmd)))));
+        targetPlayer.playSound(targetPlayer.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, SoundCategory.MASTER, 1.0f, 1.0f);
         return true;
     }
 }
