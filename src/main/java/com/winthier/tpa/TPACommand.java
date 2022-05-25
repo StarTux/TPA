@@ -9,7 +9,9 @@ import com.cavetale.core.font.DefaultFont;
 import com.winthier.chat.ChatPlugin;
 import com.winthier.connect.Connect;
 import com.winthier.connect.ConnectPlugin;
+import com.winthier.connect.payload.OnlinePlayer;
 import com.winthier.playercache.PlayerCache;
+import java.util.ArrayList;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -30,7 +32,13 @@ final class TPACommand extends AbstractCommand<TPAPlugin> {
     protected void onEnable() {
         rootNode.arguments("<player>")
             .description("Request teleport")
-            .completers(CommandArgCompleter.NULL)
+            .completers(CommandArgCompleter.supplyList(() -> {
+                        ArrayList<String> result = new ArrayList<>();
+                        for (OnlinePlayer it : Connect.getInstance().getOnlinePlayers()) {
+                            result.add(it.getName());
+                        }
+                        return result;
+                    }))
             .remotePlayerCaller(this::tpa);
     }
 
