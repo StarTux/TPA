@@ -32,7 +32,7 @@ final class TPACommand extends AbstractCommand<TPAPlugin> {
     protected void onEnable() {
         rootNode.arguments("<player>")
             .description("Request teleport")
-            .completers(CommandArgCompleter.supplyList(() -> {
+            .completers(CommandArgCompleter.supplyIgnoreCaseList(() -> {
                         ArrayList<String> result = new ArrayList<>();
                         for (OnlinePlayer it : Connect.getInstance().getOnlinePlayers()) {
                             result.add(it.getName());
