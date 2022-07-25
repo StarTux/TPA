@@ -85,7 +85,8 @@ final class TPACommand extends AbstractCommand<TPAPlugin> {
                                       (DefaultFont.ACCEPT_BUTTON.forPlayer(targetPlayer)
                                        .hoverEvent(showText(text(cmd, GREEN)))
                                        .clickEvent(runCommand(cmd))),
-                                      text(player.getName() + " requested a teleport", WHITE)));
+                                      text(" " + player.getName(), GRAY),
+                                      text(" requested a teleport", WHITE)));
         targetPlayer.playSound(targetPlayer.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, SoundCategory.MASTER, 1.0f, 1.0f);
         return true;
     }
