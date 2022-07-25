@@ -16,6 +16,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
+import static com.cavetale.core.font.Unicode.tiny;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
@@ -76,15 +77,15 @@ final class TPACommand extends AbstractCommand<TPAPlugin> {
         Connect.getInstance().broadcast("tpa.request", player.getUniqueId().toString());
         plugin.putOnCooldown(player.getUniqueId(), 30L);
         player.sendMessage(join(noSeparators(),
-                                text("TPA ", DARK_AQUA),
+                                text(tiny("tpa "), DARK_AQUA),
                                 text("Request sent to " + target.name, WHITE)));
         String cmd = "/bring " + player.getName();
         targetPlayer.sendMessage(join(noSeparators(),
-                                      text("TPA ", DARK_AQUA),
-                                      text(player.getName() + " requested a teleport. Click to accept: ", WHITE),
-                                      (DefaultFont.ACCEPT_BUTTON.component
+                                      text(tiny("tpa "), DARK_AQUA),
+                                      (DefaultFont.ACCEPT_BUTTON.forPlayer(targetPlayer)
                                        .hoverEvent(showText(text(cmd, GREEN)))
-                                       .clickEvent(runCommand(cmd)))));
+                                       .clickEvent(runCommand(cmd))),
+                                      text(player.getName() + " requested a teleport", WHITE)));
         targetPlayer.playSound(targetPlayer.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, SoundCategory.MASTER, 1.0f, 1.0f);
         return true;
     }
