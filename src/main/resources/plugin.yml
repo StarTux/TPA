@@ -2,7 +2,7 @@ main: com.winthier.tpa.TPAPlugin
 name: TPA
 
 version: 0.1
-api-version: '1.21.8'
+api-version: '1.21.10'
 
 description: Teleport request
 author: StarTux
